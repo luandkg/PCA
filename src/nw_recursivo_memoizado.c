@@ -158,17 +158,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char query[MAX_LEN];
-    char db[MAX_LEN];
+    char seqA[MAX_LEN];
+    char seqB[MAX_LEN];
 
     // Lê as duas sequências de entrada a partir dos arquivos informados.
 
-    if (!ler_sequencia(argv[1], query) || !ler_sequencia(argv[2], db)) {
+    if (!ler_sequencia(argv[1], seqA) || !ler_sequencia(argv[2], seqB)) {
         return 1;
     }
 
-    int m = strlen(query);
-    int n = strlen(db);
+    int m = strlen(seqA);
+    int n = strlen(seqB);
 
     // Inicializa as dimensões do problema.
 
@@ -183,15 +183,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int score = nw_recursivo_memoizado(query, db, m, n);
+    int score = nw_recursivo_memoizado(seqA, seqB, m, n);
     
     // Ajusta as bordas da matriz com valores de gap, garantindo que os casos base fiquem corretos.
     for (int i = 0; i <= m; i++) M_visualizacao[i][0] = i * GAP;
     for (int j = 0; j <= n; j++) M_visualizacao[0][j] = j * GAP;
 
     // Reconstrói o caminho ótimo e exibe a matriz de alinhamento completa.
-    calcular_traceback(query, db);
-    imprimir_matriz(query, db);
+    calcular_traceback(seqA, seqB);
+    imprimir_matriz(seqA, seqB);
     printf("[NW RECURSIVO MEMOIZADO] Score: %d\n", score);
 
     // Libera toda a memória alocada dinamicamente.
