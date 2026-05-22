@@ -18,7 +18,8 @@ int max3(int a, int b, int c) {
     return max;
 }
 
-int nw_recursivo(const char *seqA, const char *seqB, int i, int j) {
+// RECURSIVO OTIMIZADO COM MEMOIZAÇÃO (Top-Down O(m x n))
+int nw_recursivo_memoizado(const char *seqA, const char *seqB, int i, int j) {
     if (i == 0) {
         M_visualizacao[0][j] = j * GAP;
         return j * GAP;
@@ -28,15 +29,16 @@ int nw_recursivo(const char *seqA, const char *seqB, int i, int j) {
         return i * GAP;
     }
 
+    // Interceptação inteligente: Se calculou antes, pula as chamadas recursivas
     if (M_visualizacao[i][j] != UNKNOWN) {
         return M_visualizacao[i][j];
     }
 
     int score_match = (seqA[i - 1] == seqB[j - 1]) ? MATCH : MISMATCH;
 
-    int diagonal = nw_recursivo(seqA, seqB, i - 1, j - 1) + score_match;
-    int delecao  = nw_recursivo(seqA, seqB, i - 1, j) + GAP;
-    int insercao = nw_recursivo(seqA, seqB, i, j - 1) + GAP;
+    int diagonal = nw_recursivo_memoizado(seqA, seqB, i - 1, j - 1) + score_match;
+    int delecao  = nw_recursivo_memoizado(seqA, seqB, i - 1, j) + GAP;
+    int insercao = nw_recursivo_memoizado(seqA, seqB, i, j - 1) + GAP;
 
     int resultado = max3(diagonal, delecao, insercao);
     M_visualizacao[i][j] = resultado;
@@ -73,7 +75,7 @@ void imprimir_matriz(const char *seqA, const char *seqB) {
     int n = strlen(seqB);
 
     printf("\n┌───────────────────────────────────────────┐");
-    printf("\n│    TABELA DE ALINHAMENTO (RECURSIVO)      │");
+    printf("\n│  TABELA DE ALINHAMENTO (MEMOIZADO com *)  │");
     printf("\n└───────────────────────────────────────────┘\n\n");
     
     printf("┌──────┬──────┬");
@@ -166,14 +168,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int score = nw_recursivo(query, db, m, n);
+    int score = nw_recursivo_memoizado(query, db, m, n);
     
     for (int i = 0; i <= m; i++) M_visualizacao[i][0] = i * GAP;
     for (int j = 0; j <= n; j++) M_visualizacao[0][j] = j * GAP;
 
     calcular_traceback(query, db);
     imprimir_matriz(query, db);
-    printf("[NW RECURSIVO] Score: %d\n", score);
+    printf("[NW RECURSIVO MEMOIZADO] Score: %d\n", score);
 
     for (int i = 0; i <= m; i++) {
         free(M_visualizacao[i]);
