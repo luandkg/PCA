@@ -14,10 +14,13 @@ int max3(int a, int b, int c) {
     return max;
 }
 
+// Implementação de Needleman-Wunsch por programação dinâmica.
+// Preenche a matriz de pontuações H e reconstrói o caminho ótimo.
 void nw_programacao_dinamica(const char *seqA, const char *seqB) {
     int m = strlen(seqA);
     int n = strlen(seqB);
 
+    // Aloca as matrizes de pontuação e de traceback com dimensões (m+1) x (n+1).
     int **H = (int **)malloc((m + 1) * sizeof(int *));
     int **Caminho_Traceback = (int **)malloc((m + 1) * sizeof(int *));
     for (int i = 0; i <= m; i++) {
@@ -25,9 +28,11 @@ void nw_programacao_dinamica(const char *seqA, const char *seqB) {
         Caminho_Traceback[i] = (int *)calloc((n + 1), sizeof(int));
     }
 
+    // Inicializa as bordas da matriz com penalidades de gap.
     for (int i = 0; i <= m; i++) H[i][0] = i * GAP;
     for (int j = 0; j <= n; j++) H[0][j] = j * GAP;
 
+    // Calcula os valores da matriz linha a linha, usando os subproblemas resolvidos previamente.
     for (int i = 1; i <= m; i++) {
         for (int j = 1; j <= n; j++) {
             int score_match = (seqA[i - 1] == seqB[j - 1]) ? MATCH : MISMATCH;
@@ -40,6 +45,7 @@ void nw_programacao_dinamica(const char *seqA, const char *seqB) {
         }
     }
 
+    // Reconstrói o caminho do alinhamento ótimo a partir da célula final.
     int i_tr = m, j_tr = n;
     while (i_tr > 0 || j_tr > 0) {
         Caminho_Traceback[i_tr][j_tr] = 1;
@@ -145,10 +151,12 @@ int main(int argc, char *argv[]) {
     char seqA[MAX_LEN];
     char seqB[MAX_LEN];
 
+    // Lê as duas sequências de entrada a partir dos arquivos informados.
     if (!ler_sequencia(argv[1], seqA) || !ler_sequencia(argv[2], seqB)) {
         return 1;
     }
 
+    // Executa o alinhamento por programação dinâmica.
     nw_programacao_dinamica(seqA, seqB);
 
     return 0;
