@@ -11,6 +11,7 @@
 int **M_visualizacao;
 int **Caminho_Traceback; 
 
+// Retorna o maior valor entre três inteiros.
 int max3(int a, int b, int c) {
     int max = a;
     if (b > max) max = b;
@@ -18,24 +19,28 @@ int max3(int a, int b, int c) {
     return max;
 }
 
-// RECURSIVO OTIMIZADO COM MEMOIZAÇÃO (Top-Down O(m x n))
+// Algoritmo de Needleman-Wunsch recursivo com memoização (top-down O(m x n)).
+// Calcula o score de alinhamento para prefixos de seqA e seqB de comprimento i e j.
 int nw_recursivo_memoizado(const char *seqA, const char *seqB, int i, int j) {
+    // Caso base: seqA está vazia, preencher a primeira linha com gaps.
     if (i == 0) {
         M_visualizacao[0][j] = j * GAP;
         return j * GAP;
     }
+    // Caso base: seqB está vazia, preencher a primeira coluna com gaps.
     if (j == 0) {
         M_visualizacao[i][0] = i * GAP;
         return i * GAP;
     }
 
-    // Interceptação inteligente: Se calculou antes, pula as chamadas recursivas
+    // Se o valor já foi calculado antes, retorna diretamente para evitar recomputação.
     if (M_visualizacao[i][j] != UNKNOWN) {
         return M_visualizacao[i][j];
     }
 
     int score_match = (seqA[i - 1] == seqB[j - 1]) ? MATCH : MISMATCH;
 
+    // Calcula recursivamente os três possíveis caminhos de alinhamento.
     int diagonal = nw_recursivo_memoizado(seqA, seqB, i - 1, j - 1) + score_match;
     int delecao  = nw_recursivo_memoizado(seqA, seqB, i - 1, j) + GAP;
     int insercao = nw_recursivo_memoizado(seqA, seqB, i, j - 1) + GAP;
@@ -46,6 +51,8 @@ int nw_recursivo_memoizado(const char *seqA, const char *seqB, int i, int j) {
     return resultado;
 }
 
+// Reconstrói o caminho ótimo a partir da célula final (m, n) usando a matriz de pontuações.
+// Marca em Caminho_Traceback as células que fazem parte do alinhamento ideal.
 void calcular_traceback(const char *seqA, const char *seqB) {
     int i = strlen(seqA);
     int j = strlen(seqB);
@@ -70,6 +77,8 @@ void calcular_traceback(const char *seqA, const char *seqB) {
     Caminho_Traceback[0][0] = 1; 
 }
 
+// Exibe a matriz de pontuações para o alinhamento com destaque das células do traceback.
+// O asterisco indica as células que fazem parte do caminho ótimo.
 void imprimir_matriz(const char *seqA, const char *seqB) {
     int m = strlen(seqA);
     int n = strlen(seqB);
@@ -126,6 +135,7 @@ void imprimir_matriz(const char *seqA, const char *seqB) {
     printf("\n");
 }
 
+// Lê uma sequência de um arquivo e remove o caractere de nova linha ao final.
 int ler_sequencia(const char *filename, char *buffer) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -151,6 +161,8 @@ int main(int argc, char *argv[]) {
     char query[MAX_LEN];
     char db[MAX_LEN];
 
+    // Lê as duas sequências de entrada a partir dos arquivos informados.
+
     if (!ler_sequencia(argv[1], query) || !ler_sequencia(argv[2], db)) {
         return 1;
     }
@@ -158,6 +170,9 @@ int main(int argc, char *argv[]) {
     int m = strlen(query);
     int n = strlen(db);
 
+    // Inicializa as dimensões do problema.
+
+    // Aloca memória para a matriz de pontuações e para a matriz de traceback.
     M_visualizacao = (int **)malloc((m + 1) * sizeof(int *));
     Caminho_Traceback = (int **)malloc((m + 1) * sizeof(int *));
     for (int i = 0; i <= m; i++) {
@@ -170,13 +185,16 @@ int main(int argc, char *argv[]) {
 
     int score = nw_recursivo_memoizado(query, db, m, n);
     
+    // Ajusta as bordas da matriz com valores de gap, garantindo que os casos base fiquem corretos.
     for (int i = 0; i <= m; i++) M_visualizacao[i][0] = i * GAP;
     for (int j = 0; j <= n; j++) M_visualizacao[0][j] = j * GAP;
 
+    // Reconstrói o caminho ótimo e exibe a matriz de alinhamento completa.
     calcular_traceback(query, db);
     imprimir_matriz(query, db);
     printf("[NW RECURSIVO MEMOIZADO] Score: %d\n", score);
 
+    // Libera toda a memória alocada dinamicamente.
     for (int i = 0; i <= m; i++) {
         free(M_visualizacao[i]);
         free(Caminho_Traceback[i]);
