@@ -59,3 +59,5 @@ Aqui está a tabela formatada em Markdown, pronta para ser inserida no seu relat
 | **T30**           | ~1,23 × 10²⁸         | 961                      | 961           |
 
 ---
+
+"Os resultados são idênticos porque ambos os algoritmos calculam exatamente a mesma função de recorrência matemática. A diferença entre eles é puramente estrutural: um utiliza a pilha de chamadas e memoização para preencher os estados sob demanda (Top-Down), enquanto o outro preenche a matriz de forma sequencial e iterativa (Bottom-Up). A identidade dos resultados é a validação de que a lógica de ambos os métodos está correta."
