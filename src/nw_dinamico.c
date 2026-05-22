@@ -142,14 +142,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char query[MAX_LEN];
-    char db[MAX_LEN];
+    char seqA[MAX_LEN];
+    char seqB[MAX_LEN];
 
-    if (!ler_sequencia(argv[1], query) || !ler_sequencia(argv[2], db)) {
+    if (!ler_sequencia(argv[1], seqA) || !ler_sequencia(argv[2], seqB)) {
         return 1;
     }
 
-    nw_programacao_dinamica(query, db);
+    nw_programacao_dinamica(seqA, seqB);
 
     return 0;
 }
