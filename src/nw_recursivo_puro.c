@@ -131,10 +131,10 @@ int main(int argc, char *argv[]) {
     if (argc < 3) return 1;
 
     // Lê as duas sequências a partir dos arquivos informados nos argumentos.
-    char query[MAX_LEN], db[MAX_LEN];
-    ler_sequencia(argv[1], query);
-    ler_sequencia(argv[2], db);
-    int m = strlen(query), n = strlen(db);
+    char seqA[MAX_LEN], seqB[MAX_LEN];
+    ler_sequencia(argv[1], seqA);
+    ler_sequencia(argv[2], seqB);
+    int m = strlen(seqA), n = strlen(seqB);
 
     // Evita usar recursão pura para sequências muito longas.
     if (m > 15 || n > 15) {
@@ -151,9 +151,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Executa o alinhamento recursivo puro e calcula o traceback.
-    int score = nw_recursivo_puro(query, db, m, n);
-    calcular_traceback(query, db);
-    imprimir_matriz(query, db);
+    int score = nw_recursivo_puro(seqA, seqB, m, n);
+    calcular_traceback(seqA, seqB);
+    imprimir_matriz(seqA, seqB);
     
     printf("\n[NW RECURSIVO PURO] Score: %d\n", score);
 
