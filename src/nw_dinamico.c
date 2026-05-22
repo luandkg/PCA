@@ -118,6 +118,7 @@ void nw_programacao_dinamica(const char *seqA, const char *seqB) {
 
     printf("[NW PROG. DINAMICA] Score: %d\n", H[m][n]);
 
+    // Libera a memória usada pelas matrizes H e Caminho_Traceback.
     for (int i = 0; i <= m; i++) {
         free(H[i]);
         free(Caminho_Traceback[i]);
@@ -126,6 +127,7 @@ void nw_programacao_dinamica(const char *seqA, const char *seqB) {
     free(Caminho_Traceback);
 }
 
+// Lê uma sequência de um arquivo e remove o caractere de nova linha final.
 int ler_sequencia(const char *filename, char *buffer) {
     FILE *file = fopen(filename, "r");
     if (!file) {
