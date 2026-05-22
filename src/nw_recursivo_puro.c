@@ -8,6 +8,7 @@
 #define MAX_LEN  2048
 
 int **M_visualizacao;
+int **Caminho_Traceback; // Matriz auxiliar para marcar o caminho do Traceback
 
 int max3(int a, int b, int c) {
     int max = a;
@@ -16,9 +17,8 @@ int max3(int a, int b, int c) {
     return max;
 }
 
-// ALGORITMO RECURSIVO PURO (Sem memória - Exponencial O(3^(m+n)))
+// Algoritmo Recursivo Puro
 int nw_recursivo_puro(const char *seqA, const char *seqB, int i, int j) {
-    // Casos base: fronteiras da tabela
     if (i == 0) {
         M_visualizacao[0][j] = j * GAP;
         return j * GAP;
@@ -30,7 +30,6 @@ int nw_recursivo_puro(const char *seqA, const char *seqB, int i, int j) {
 
     int score_match = (seqA[i - 1] == seqB[j - 1]) ? MATCH : MISMATCH;
 
-    // Força bruta: recalcula tudo repetidamente a cada ramificação
     int diagonal = nw_recursivo_puro(seqA, seqB, i - 1, j - 1) + score_match;
     int delecao  = nw_recursivo_puro(seqA, seqB, i - 1, j) + GAP;
     int insercao = nw_recursivo_puro(seqA, seqB, i, j - 1) + GAP;
@@ -41,56 +40,59 @@ int nw_recursivo_puro(const char *seqA, const char *seqB, int i, int j) {
     return resultado;
 }
 
+// Reconstrói o caminho ótimo após o preenchimento da matriz
+void calcular_traceback(const char *seqA, const char *seqB) {
+    int i = strlen(seqA);
+    int j = strlen(seqB);
+
+    while (i > 0 || j > 0) {
+        Caminho_Traceback[i][j] = 1; // Marca a célula atual
+
+        if (i > 0 && j > 0) {
+            int score_match = (seqA[i - 1] == seqB[j - 1]) ? MATCH : MISMATCH;
+            if (M_visualizacao[i][j] == M_visualizacao[i - 1][j - 1] + score_match) {
+                i--; j--; continue;
+            }
+        }
+        if (i > 0 && M_visualizacao[i][j] == M_visualizacao[i - 1][j] + GAP) {
+            i--;
+        } else if (j > 0 && M_visualizacao[i][j] == M_visualizacao[i][j - 1] + GAP) {
+            j--;
+        }
+    }
+    Caminho_Traceback[0][0] = 1;
+}
+
 void imprimir_matriz(const char *seqA, const char *seqB) {
     int m = strlen(seqA);
     int n = strlen(seqB);
 
     printf("\n┌───────────────────────────────────────────┐");
-    printf("\n│    TABELA DE ALINHAMENTO (RECURSIVO PURO) │");
+    printf("\n│   TABELA DE ALINHAMENTO (RECURSIVO PURO*) │");
     printf("\n└───────────────────────────────────────────┘\n\n");
     
+    // Cabeçalho da Tabela
     printf("┌──────┬──────┬");
-    for (int j = 0; j < n; j++) {
-        if (j == n - 1) printf("──────┐\n");
-        else printf("──────┬");
-    }
-    
-    printf("│      │   -  │");
-    for (int j = 0; j < n; j++) {
-        printf("  %c   │", seqB[j]);
-    }
+    for (int j = 0; j < n; j++) printf("──────┬");
+    printf("\n│      │   -  │");
+    for (int j = 0; j < n; j++) printf("  %c   │", seqB[j]);
+    printf("\n├──────┼──────┼");
+    for (int j = 0; j < n; j++) printf("──────┼");
     printf("\n");
 
-    printf("├──────┼──────┼");
-    for (int j = 0; j < n; j++) {
-        if (j == n - 1) printf("──────┤\n");
-        else printf("──────┼");
-    }
-
+    // Conteúdo da Tabela
     for (int i = 0; i <= m; i++) {
         if (i == 0) printf("│   -  │");
         else printf("│   %c  │", seqA[i - 1]);
 
         for (int j = 0; j <= n; j++) {
-            printf(" %4d │", M_visualizacao[i][j]);
+            if (Caminho_Traceback[i][j]) printf(" %3d* │", M_visualizacao[i][j]);
+            else printf(" %4d │", M_visualizacao[i][j]);
         }
+        printf("\n├──────┼──────┼");
+        for (int j = 0; j < n; j++) printf("──────┼");
         printf("\n");
-
-        if (i == m) {
-            printf("└──────┴──────┴");
-            for (int j = 0; j < n; j++) {
-                if (j == n - 1) printf("──────┘\n");
-                else printf("──────┴");
-            }
-        } else {
-            printf("├──────┼──────┼");
-            for (int j = 0; j < n; j++) {
-                if (j == n - 1) printf("──────┤\n");
-                else printf("──────┼");
-            }
-        }
     }
-    printf("\n");
 }
 
 int ler_sequencia(const char *filename, char *buffer) {
@@ -100,7 +102,6 @@ int ler_sequencia(const char *filename, char *buffer) {
         return 0;
     }
     if (fgets(buffer, MAX_LEN, file) == NULL) {
-        fprintf(stderr, "Arquivo vazio ou ilegível: %s\n", filename);
         fclose(file);
         return 0;
     }
@@ -110,40 +111,37 @@ int ler_sequencia(const char *filename, char *buffer) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        printf("Uso: %s <arquivo_sequencia_A> <arquivo_sequencia_B>\n", argv[0]);
-        return 1;
-    }
+    if (argc < 3) return 1;
 
-    char query[MAX_LEN];
-    char db[MAX_LEN];
+    char query[MAX_LEN], db[MAX_LEN];
+    ler_sequencia(argv[1], query);
+    ler_sequencia(argv[2], db);
+    int m = strlen(query), n = strlen(db);
 
-    if (!ler_sequencia(argv[1], query) || !ler_sequencia(argv[2], db)) {
-        return 1;
-    }
-
-    int m = strlen(query);
-    int n = strlen(db);
-
-    // Bloqueio de segurança para evitar travamento infinito no seminário
     if (m > 15 || n > 15) {
-        printf("[ERRO BLOQUEADO] Sequências muito grandes para a recursão pura!\n");
-        printf("Tamanhos: %d e %d. O limite sem otimização é 15 caracteres.\n", m, n);
+        printf("Limite excedido: Recursão pura limitada a 15 caracteres.\n");
         return 1;
     }
 
     M_visualizacao = (int **)malloc((m + 1) * sizeof(int *));
+    Caminho_Traceback = (int **)malloc((m + 1) * sizeof(int *));
     for (int i = 0; i <= m; i++) {
         M_visualizacao[i] = (int *)calloc((n + 1), sizeof(int));
+        Caminho_Traceback[i] = (int *)calloc((n + 1), sizeof(int));
     }
 
     int score = nw_recursivo_puro(query, db, m, n);
-    
+    calcular_traceback(query, db);
     imprimir_matriz(query, db);
-    printf("[NW RECURSIVO PURO] Score: %d\n", score);
+    
+    printf("\n[NW RECURSIVO PURO] Score: %d\n", score);
 
-    for (int i = 0; i <= m; i++) free(M_visualizacao[i]);
+    for (int i = 0; i <= m; i++) {
+        free(M_visualizacao[i]);
+        free(Caminho_Traceback[i]);
+    }
     free(M_visualizacao);
+    free(Caminho_Traceback);
 
     return 0;
 }

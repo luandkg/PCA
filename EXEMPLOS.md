@@ -5,7 +5,7 @@
 Ideal para validação visual e explicação rápida, pois a tabela inteira cabe na tela do terminal sem necessidade de rolagem.
 
 ```bash
-# Teste com Recursão Pura (Sem otimização)
+# Teste com Recursão Pura (Sem otimização, destaca o Traceback com *)
 ./build/nw_recursivo_puro 'dados/sequencia_t8/seq1.dna' 'dados/sequencia_t8/seq2.dna'
 
 # Teste com Recursão Memoizada (Otimizada, destaca o Traceback com *)
@@ -47,3 +47,15 @@ A prova de conceito definitiva. Demonstra o colapso do algoritmo de força bruta
 ./build/nw_dinamico 'dados/sequencia_t30/seq1.dna' 'dados/sequencia_t30/seq2.dna'
 
 ```
+
+Aqui está a tabela formatada em Markdown, pronta para ser inserida no seu relatório:
+
+### Tabela Comparativa: Número Estimado de Operações
+
+| Tamanho (Strings) | `nw_recursivo_puro`  | `nw_recursivo_memoizado` | `nw_dinamico` |
+| ----------------- | -------------------- | ------------------------ | ------------- |
+| **T8**            | ~43.046.721          | 81                       | 81            |
+| **T15**           | ~205.891.132.094.649 | 256                      | 256           |
+| **T30**           | ~1,23 × 10²⁸         | 961                      | 961           |
+
+---
