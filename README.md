@@ -68,18 +68,18 @@ Uma vez que a matriz $H$ está completamente preenchida por qualquer uma das té
 
 ---
 
-## 3. Análise Comparativa de Desempenho
+### 3. Análise Comparativa de Desempenho
 
-A tabela abaixo sumariza as divergências de engenharia de software e análise assintótica entre as duas estratégias após a introdução da otimização por memoização:
+A tabela abaixo sumariza as métricas técnicas e limitações de engenharia entre as três estratégias de implementação:
 
-| Métrica / Critério de Análise             |     Abordagem Recursiva (Memoizada)      |       Programação Dinâmica (Iterativa)        |
-| :---------------------------------------- | :--------------------------------------: | :-------------------------------------------: |
-| **Complexidade de Tempo (Pior Caso)**     |        $\mathcal{O}(m \times n)$         |           $\mathcal{O}(m \times n)$           |
-| **Complexidade de Espaço (Memória)**      |        $\mathcal{O}(m \times n)$         |           $\mathcal{O}(m \times n)$           |
-| **Consumo da Pilha do Sistema (_Stack_)** |           $\mathcal{O}(m + n)$           |   $\mathcal{O}(1)$ (Estático / Desprezível)   |
-| **Avaliação de Subproblemas**             |  _Lazy Evaluation_ (Avalia sob demanda)  |  _Eager Evaluation_ (Avalia exaustivamente)   |
-| **Sobrecarga de Execução (_Overhead_)**   | Alto (Múltiplos empilhamentos de escopo) | Baixo (Operações aritméticas diretas em laço) |
-| **Estabilidade para Cadeias Longas**      |   Baixa (Propensa a _Stack Overflow_)    |  Alta (Limitada apenas pela RAM disponível)   |
+| Métrica                    | Recursiva Pura      | Recursiva Memoizada   | Dinâmica (Iterativa)  |
+| :------------------------- | :------------------ | :-------------------- | :-------------------- |
+| **Complexidade de Tempo**  | $O(3^{m+n})$        | $O(m \times n)$       | $O(m \times n)$       |
+| **Complexidade de Espaço** | $O(m + n)$          | $O(m \times n)$       | $O(m \times n)$       |
+| **Uso da Pilha (Stack)**   | $O(m + n)$          | $O(m + n)$            | $O(1)$                |
+| **Fluxo de Controle**      | Chamadas recursivas | Chamadas + Cache      | Laços `for` aninhados |
+| **Limite de Sequência**    | $\approx 20$ bases  | $\approx 5.000$ bases | Limitado pela RAM     |
+| **Risco de Falha**         | Stack Overflow      | Stack Overflow        | Out of Memory         |
 
 ### 3.1 Discussão Crítica da Análise
 
