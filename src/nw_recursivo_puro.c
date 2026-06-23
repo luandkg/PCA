@@ -1,6 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/resource.h>
+
+long vmrss_kb() {
+    FILE *f = fopen("/proc/self/status", "r");
+    if (!f) return -1;
+    char linha[128];
+    long kb = -1;
+    while (fgets(linha, sizeof(linha), f)) {
+        if (sscanf(linha, "VmRSS: %ld kB", &kb) == 1) break;
+    }
+    fclose(f);
+    return kb;
+}
 
 #define MATCH     1
 #define MISMATCH -1
@@ -8,7 +22,8 @@
 #define MAX_LEN  2048
 
 int **M_visualizacao;
-int **Caminho_Traceback; // Matriz auxiliar para marcar o caminho do Traceback
+int **Caminho_Traceback;
+int profundidade_maxima = 0;
 
 // Retorna o maior entre três valores inteiros.
 int max3(int a, int b, int c) {
@@ -22,6 +37,9 @@ int max3(int a, int b, int c) {
 // Calcula o score de alinhamento para prefixos de seqA e seqB de tamanho i e j.
 // A matriz M_visualizacao é preenchida com valores de pontuação para visualização.
 int nw_recursivo_puro(const char *seqA, const char *seqB, int i, int j) {
+    int prof_atual = i + j;
+    if (prof_atual > profundidade_maxima) profundidade_maxima = prof_atual;
+
     // Caso base: seqA esvaziou, preenche coluna j com penalidades de gaps.
     if (i == 0) {
         M_visualizacao[0][j] = j * GAP;
@@ -151,11 +169,22 @@ int main(int argc, char *argv[]) {
     }
 
     // Executa o alinhamento recursivo puro e calcula o traceback.
+    long mem_antes = vmrss_kb();
+    clock_t inicio = clock();
     int score = nw_recursivo_puro(seqA, seqB, m, n);
+    clock_t fim_calculo = clock();
     calcular_traceback(seqA, seqB);
+    clock_t fim = clock();
+    long mem_depois = vmrss_kb();
     imprimir_matriz(seqA, seqB);
-    
+
+    double tempo_calculo_ms = (double)(fim_calculo - inicio) / CLOCKS_PER_SEC * 1000.0;
+    double tempo_total_ms   = (double)(fim - inicio) / CLOCKS_PER_SEC * 1000.0;
     printf("\n[NW RECURSIVO PURO] Score: %d\n", score);
+    printf("[NW RECURSIVO PURO] Tempo de calculo: %.4f ms | Tempo total: %.4f ms\n", tempo_calculo_ms, tempo_total_ms);
+    printf("[NW RECURSIVO PURO] Memoria (RSS antes: %ld KB | depois: %ld KB | delta: %ld KB)\n",
+           mem_antes, mem_depois, mem_depois - mem_antes);
+    printf("[NW RECURSIVO PURO] Profundidade maxima da pilha de recursao: %d\n", profundidade_maxima);
 
     // Libera a memória alocada para evitar vazamentos.
     for (int i = 0; i <= m; i++) {

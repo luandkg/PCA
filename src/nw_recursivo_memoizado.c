@@ -1,6 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/resource.h>
+
+long vmrss_kb() {
+    FILE *f = fopen("/proc/self/status", "r");
+    if (!f) return -1;
+    char linha[128];
+    long kb = -1;
+    while (fgets(linha, sizeof(linha), f)) {
+        if (sscanf(linha, "VmRSS: %ld kB", &kb) == 1) break;
+    }
+    fclose(f);
+    return kb;
+}
 
 #define MATCH     1
 #define MISMATCH -1
@@ -183,16 +197,27 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    long mem_antes = vmrss_kb();
+    clock_t inicio = clock();
     int score = nw_recursivo_memoizado(seqA, seqB, m, n);
-    
+    clock_t fim_calculo = clock();
+
     // Ajusta as bordas da matriz com valores de gap, garantindo que os casos base fiquem corretos.
     for (int i = 0; i <= m; i++) M_visualizacao[i][0] = i * GAP;
     for (int j = 0; j <= n; j++) M_visualizacao[0][j] = j * GAP;
 
     // Reconstrói o caminho ótimo e exibe a matriz de alinhamento completa.
     calcular_traceback(seqA, seqB);
+    clock_t fim = clock();
+    long mem_depois = vmrss_kb();
     imprimir_matriz(seqA, seqB);
+
+    double tempo_calculo_ms = (double)(fim_calculo - inicio) / CLOCKS_PER_SEC * 1000.0;
+    double tempo_total_ms   = (double)(fim - inicio) / CLOCKS_PER_SEC * 1000.0;
     printf("[NW RECURSIVO MEMOIZADO] Score: %d\n", score);
+    printf("[NW RECURSIVO MEMOIZADO] Tempo de calculo: %.4f ms | Tempo total: %.4f ms\n", tempo_calculo_ms, tempo_total_ms);
+    printf("[NW RECURSIVO MEMOIZADO] Memoria (RSS antes: %ld KB | depois: %ld KB | delta: %ld KB)\n",
+           mem_antes, mem_depois, mem_depois - mem_antes);
 
     // Libera toda a memória alocada dinamicamente.
     for (int i = 0; i <= m; i++) {

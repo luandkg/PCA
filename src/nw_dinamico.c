@@ -1,6 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/resource.h>
+
+long vmrss_kb() {
+    FILE *f = fopen("/proc/self/status", "r");
+    if (!f) return -1;
+    char linha[128];
+    long kb = -1;
+    while (fgets(linha, sizeof(linha), f)) {
+        if (sscanf(linha, "VmRSS: %ld kB", &kb) == 1) break;
+    }
+    fclose(f);
+    return kb;
+}
 
 #define MATCH     1
 #define MISMATCH -1
@@ -159,7 +173,16 @@ int main(int argc, char *argv[]) {
     }
 
     // Executa o alinhamento por programação dinâmica.
+    long mem_antes = vmrss_kb();
+    clock_t inicio = clock();
     nw_programacao_dinamica(seqA, seqB);
+    clock_t fim = clock();
+    long mem_depois = vmrss_kb();
+
+    double tempo_ms = (double)(fim - inicio) / CLOCKS_PER_SEC * 1000.0;
+    printf("[NW PROG. DINAMICA] Tempo de execucao: %.4f ms\n", tempo_ms);
+    printf("[NW PROG. DINAMICA] Memoria (RSS antes: %ld KB | depois: %ld KB | delta: %ld KB)\n",
+           mem_antes, mem_depois, mem_depois - mem_antes);
 
     return 0;
 }
